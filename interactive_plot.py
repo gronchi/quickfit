@@ -1011,7 +1011,7 @@ class FitPlot():
                 y = self.m2g.Y[dind]
 
                 yerr = self.m2g.Yerr.data[dind]
-                yerr[self.m2g.Yerr.mask[dind]] = np.infty
+                yerr[self.m2g.Yerr.mask[dind]] = np.inf
 
                 ry = self.m2g.retro_f[dind]
                 self.replot_plot[idiag].set_data(x,ry)
@@ -1062,7 +1062,7 @@ class FitPlot():
                                 axis=0, copy=False, assume_sorted=True)(np.clip(p, x[0],x[-1])))
 
                 self.fit_plot.set_data(y,prof[0])
-                self.fit_confidence = update_fill_between(self.fit_confidence,y,prof[1], prof[2],-np.infty, np.infty )
+                self.fit_confidence = update_fill_between(self.fit_confidence,y,prof[1], prof[2],-np.inf, np.inf )
 
 
         #show discontinuties in time

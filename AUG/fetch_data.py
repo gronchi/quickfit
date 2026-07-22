@@ -4,6 +4,10 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 
 import MDSplus
 import numpy as np
+try:
+    from numpy import trapezoid as trapz
+except ImportError:
+    from numpy import trapz  #np.trapz removed in numpy 2.0
 from time import time
 from scipy.interpolate import interp1d,NearestNDInterpolator,LinearNDInterpolator
 
@@ -16,7 +20,10 @@ import xarray
 import re,sys
 #np.seterr(all='raise')
 from IPython import embed
-from scipy.integrate import cumulative_trapezoid as cumtrapz
+try:
+    from scipy.integrate import cumulative_trapezoid as cumtrapz
+except ImportError:
+    from scipy.integrate import cumtrapz  #cumulative_trapezoid added in scipy 1.6
 
 
 #Note about output errorbars:
@@ -326,8 +333,8 @@ class data_loader:
                 laser = self.dd.GetSignal('Laser_e') 
                 
             
-            Te_err[(Te_err<=0) | (Te <=0 )]  = -np.infty
-            ne_err[(ne_err<=0) | (ne <=0 )]  = -np.infty
+            Te_err[(Te_err<=0) | (Te <=0 )]  = -np.inf
+            ne_err[(ne_err<=0) | (ne <=0 )]  = -np.inf
             channel = np.arange(Te_err.shape[1])
 
             
@@ -549,8 +556,8 @@ class data_loader:
                     
                       
         
-                Ti_err[(Ti_err<=0) | (Ti <=0 )]  = -np.infty
-                vtor_err[(vtor_err<=0) ]  = -np.infty
+                Ti_err[(Ti_err<=0) | (Ti <=0 )]  = -np.inf
+                vtor_err[(vtor_err<=0) ]  = -np.inf
                 channel = np.arange(Ti.shape[1])
 
                 
@@ -859,7 +866,7 @@ class data_loader:
         #interpolate density along LOS for each time 
         LOS_ne = [np.interp(lr,r,n,right=0) for lr, r, n in zip(LOS_rho, R,N)]
         #do line integration
-        LOS_ne_int = np.trapz(LOS_ne,LOS_L,axis=-1)
+        LOS_ne_int = trapz(LOS_ne,LOS_L,axis=-1)
         core_lasers = np.unique(laser_index)
         
     
@@ -1336,7 +1343,7 @@ class data_loader:
         #fast fetch
         out = mds_load(self.MDSconn, TDI, tree, self.shot)
         nz,nz_err, R,Z,ch_ind, tvec, zimp,array_order = out
-        nz_err[(nz<=0)|(nz > 1e20)] = np.infty
+        nz_err[(nz<=0)|(nz > 1e20)] = np.inf
         ch_ind = np.r_[ch_ind,len(tvec)]
         ch_nt = np.diff(ch_ind)
             
@@ -1448,7 +1455,7 @@ class data_loader:
             # CER upgraded with new fibers and cameras.
             disableChanVert = 'V3', 'V4', 'V5', 'V6', 'V23', 'V24'
             if 162163 <= self.shot <= 167627 and ch in disableChanVert:
-                nz_err[ind] = np.infty
+                nz_err[ind] = np.inf
             if ch == 'T7' and self.shot >= 158695:
                 nz[ind] *= 1.05
                 
@@ -1853,7 +1860,7 @@ class data_loader:
                 VB = np.single(VB[imin:])
                 tvec = tvec[imin:]
                 VB_err = abs(VB)*.1+baseline_err/2 #guess
-                VB_err[(VB == 0)|~valid[imin:]] = np.infty
+                VB_err[(VB == 0)|~valid[imin:]] = np.inf
          
                 
                 zeff['VB array'] = xarray.Dataset(attrs={'system':'VB array','wavelength': 5230.0})
@@ -1985,7 +1992,7 @@ class data_loader:
                 phi_end = np.arctan2(pos3[1],pos3[0])
 
 
-                VB_err[(VB < 0)|~np.isfinite(VB)|np.isnan(VB_err)] = np.infty
+                VB_err[(VB < 0)|~np.isfinite(VB)|np.isnan(VB_err)] = np.inf
                 VB[~np.isfinite(VB)] = 0
        
                 # conversion from from ph/m2/sr/s/A to W/cm2/A for the VB measurement

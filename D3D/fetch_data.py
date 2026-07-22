@@ -5,6 +5,10 @@ warnings.simplefilter(action='ignore', category=UserWarning)
 
 import MDSplus
 import numpy as np
+try:
+    from numpy import trapezoid as trapz
+except ImportError:
+    from numpy import trapz  #np.trapz removed in numpy 2.0
 from time import time
 from scipy.interpolate import interp1d,RectBivariateSpline,NearestNDInterpolator,LinearNDInterpolator,interpn
 
@@ -18,7 +22,10 @@ import re,sys,os
 #np.seterr(all='raise')
 from IPython import embed
 from scipy.stats import trim_mean
-from scipy.integrate import cumulative_trapezoid as cumtrapz
+try:
+    from scipy.integrate import cumulative_trapezoid as cumtrapz
+except ImportError:
+    from scipy.integrate import cumtrapz  #cumulative_trapezoid added in scipy 1.6
 
 import matplotlib.pylab as plt
 import warnings
@@ -110,8 +117,8 @@ def read_adf12(file,block, ein, dens, tion, zeff):
             cer_line['header'] = first_line
             if first_line.startswith('C'):
                 raise Exception(f'ISEL {block} is not in the atomic data file '+file)
-            cer_line['qefref'] = np.float_(f.readline()[:63].replace('D', 'e'))
-            cer_line['parmref'] = np.float_(f.readline()[:63].replace('D', 'e').split())
+            cer_line['qefref'] = np.float64(f.readline()[:63].replace('D', 'e'))
+            cer_line['parmref'] = np.float64(f.readline()[:63].replace('D', 'e').split())
             cer_line['nparmsc'] = np.int_(f.readline()[:63].split())
             
             for ipar, npar in enumerate(cer_line['nparmsc']):
@@ -124,7 +131,7 @@ def read_adf12(file,block, ein, dens, tion, zeff):
                             cer_line[name] = []
                             if q == 0: params.append(name)
                         
-                        values = np.float_(line[:63].replace('D', 'E').split())
+                        values = np.float64(line[:63].replace('D', 'E').split())
                         values = values[values > 0]
                         if not len(values):
                             continue
@@ -1997,12 +2004,12 @@ class data_loader:
         
         #plt.plot(spred_tvec, spred_data)
         #plt.show()
-        #spred_err[spred_data == 0] = np.infty  #SPRED was not working
+        #spred_err[spred_data == 0] = np.inf  #SPRED was not working
 
         #stime = stime[nbi_mixed]
 
         #br_err = np.maximum(0.10 * br, min_err)
-        #br_err[spred_data[nbi_mixed]==0] = np.infty
+        #br_err[spred_data[nbi_mixed]==0] = np.inf
         #try:
         R = np.dot(view_R, nbi_frac.T)/nbi_frac.sum(1)
         Z = np.dot(view_Z, nbi_frac.T)/nbi_frac.sum(1)
@@ -2130,7 +2137,7 @@ class data_loader:
 
         #min_err = 1.0e13
         #br_err = np.maximum(0.10 * br, min_err)
-        #br_err[spred_data[nbi_mixed]==0] = np.infty
+        #br_err[spred_data[nbi_mixed]==0] = np.inf
         #R = np.dot(view_R, nbi_on_frac[nbi_mixed].T)/nbi_on_frac.sum(1)[nbi_mixed]
         #Z = np.dot(view_Z, nbi_on_frac[nbi_mixed].T)/nbi_on_frac.sum(1)[nbi_mixed]
         #phi = np.dot(view_phi, nbi_on_frac[nbi_mixed].T)/nbi_on_frac.sum(1)[nbi_mixed]
@@ -2620,7 +2627,7 @@ class data_loader:
             # CER upgraded with new fibers and cameras.
             disableChanVert = 'V03', 'V04', 'V05', 'V06', 'V23', 'V24'
             if 162163 <= self.shot <= 167627 and ch in disableChanVert:
-                INT_ERR[ich][:] = np.infty
+                INT_ERR[ich][:] = np.inf
                 
             #apply correctin for some channels
             if ch == 'T07' and 158695 <= self.shot < 169546:
@@ -3825,7 +3832,7 @@ class data_loader:
      
                 disableChanVert = 'V03', 'V04', 'V05', 'V06', 'V23', 'V24'
                 if 162163 <= self.shot <= 167627 and ch_name in disableChanVert:
-                    nzerr_[:] = np.infty
+                    nzerr_[:] = np.inf
                 #corrections of some past calibration errors
                 if imp == 'C6' and ch_name == 'T07' and self.shot >= 158695:
                     nz_ *= 1.05
@@ -4572,7 +4579,7 @@ class data_loader:
                 time = time[imin:]
              
                 VB_err = abs(VB_data)*.1+baseline_err/2 #guess 10%error
-                VB_err[VB_data == 0] = np.infty
+                VB_err[VB_data == 0] = np.inf
                 VB_err[~valid[imin:]] *= -1 #possibly invalid, can be enabled in the GUI
 
                 
@@ -4738,7 +4745,7 @@ class data_loader:
                     phi_end = np.arctan2(pos3[1],pos3[0])
 
 
-                    VB_err[(VB < 0)|~np.isfinite(VB)|np.isnan(VB_err)] = np.infty
+                    VB_err[(VB < 0)|~np.isfinite(VB)|np.isnan(VB_err)] = np.inf
                     VB[~np.isfinite(VB)] = 0
         
                     # conversion from from ph/m2/sr/s/A to W/cm2/A for the VB measurement
@@ -5801,11 +5808,11 @@ class data_loader:
             corrupted = False
             
             if len(int_[tind]) > 0 :
-                int_err[tind][np.isnan(int_err[tind])] = np.infty
+                int_err[tind][np.isnan(int_err[tind])] = np.inf
 
                 corrupted =  corrupted| (int_[tind] <= 0)|(R[tind]  == 0)|(int_err[tind]<=0)|~np.isfinite(int_[tind])
              
-                int_err[tind][corrupted] = np.infty
+                int_err[tind][corrupted] = np.inf
                 int_[tind][~np.isfinite(int_[tind])] = 0
                 
                 if not all(corrupted):
@@ -5814,10 +5821,10 @@ class data_loader:
             
             
             if len(Ti[tind]) > 0 and np.any(np.isfinite(Ti[tind]))  and not all(corrupted):
-                Ti_err[tind][np.isnan(Ti_err[tind])] = np.infty
+                Ti_err[tind][np.isnan(Ti_err[tind])] = np.inf
                 #900eV is probably initial guess, sometimes it does not move from this value
                 corrupted = corrupted| (Ti[tind]==900) |(Ti[tind] <= 1.1)|(R[tind]  == 0)|(Ti_err[tind]<=0)|~np.isfinite(Ti[tind])
-                Ti_err[tind][corrupted] = np.infty
+                Ti_err[tind][corrupted] = np.inf
                 Ti[tind][~np.isfinite(Ti[tind])] = 0
                 #these values can be suspicious, but this way, it can be recovered by user
                 Ti_err[tind][(Ti[tind]>=15e3)] *= -1 
@@ -5837,7 +5844,7 @@ class data_loader:
                 corrupted = ~np.isfinite(rot[tind]) | (R[tind]  == 0) | corrupted
                 rot[tind][corrupted] = 0
                 corrupted |= (rot[tind]<-1e10)|(rot_err[tind]<=0)
-                rot_err[tind][corrupted] = np.infty
+                rot_err[tind][corrupted] = np.inf
 
                 rot[tind][~corrupted]    *= 1e3/R[tind][~corrupted]    
                 rot_err[tind][~corrupted] *= 1e3/R[tind][~corrupted] 
@@ -5950,8 +5957,8 @@ class data_loader:
                 continue
             
             #these points will be ignored and not plotted (negative errobars )
-            Te_err[isys][(Te_err[isys]<=0) | (Te[isys] <=5) | ~np.isfinite(Te_err[isys])]  = -np.infty
-            ne_err[isys][(ne_err[isys]<=0) | (ne[isys] <=0) | ~np.isfinite(ne_err[isys])]  = -np.infty
+            Te_err[isys][(Te_err[isys]<=0) | (Te[isys] <=5) | ~np.isfinite(Te_err[isys])]  = -np.inf
+            ne_err[isys][(ne_err[isys]<=0) | (ne[isys] <=0) | ~np.isfinite(ne_err[isys])]  = -np.inf
 
             #still show them
             if 'DENSMASK' in signals:    
@@ -6878,7 +6885,7 @@ class data_loader:
         #remove offset
         ne  -= ne[(co2_time > -2)&(co2_time < -.5)].mean(0) 
         #correpted measurements
-        ne_err[ne < 0]  = np.infty
+        ne_err[ne < 0]  = np.inf
  
 
         CO2['CO2'] = Dataset('interfer.nc',attrs={'system':'CO2'})
@@ -7067,7 +7074,7 @@ class data_loader:
         #interpolate density along LOS for each time, assume zero density outside of last measuremenst!
         LOS_ne = [np.interp(lr,r,n,right=0) for lr, r, n in zip(LOS_rho, R,N)]
         #do line integration
-        LOS_ne_int = np.trapz(LOS_ne,LOS_L,axis=-1)
+        LOS_ne_int = trapz(LOS_ne,LOS_L,axis=-1)
         core_lasers = np.unique(laser_index)
 
 

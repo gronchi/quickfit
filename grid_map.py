@@ -518,7 +518,7 @@ class map2grid():
         Yerr = self.Yerr.data[self.valid]/self.norm
         Yerr *= self.deriv_trans(Y)
         
-        Yerr[self.Yerr.mask[self.valid]] = np.infty
+        Yerr[self.Yerr.mask[self.valid]] = np.inf
 
         #transform and weight by uncertainty
         try:
@@ -881,7 +881,7 @@ class map2grid():
         Y = self.Y[self.valid]/self.norm
 
         Yerr = self.deriv_trans(Y)*self.Yerr.data[self.valid]/self.norm
-        Yerr[self.Yerr.mask[self.valid]] = np.infty
+        Yerr[self.Yerr.mask[self.valid]] = np.inf
         Y = self.trans(Y)
 
         g = np.squeeze(self.Factor(self.V.T*self.f))

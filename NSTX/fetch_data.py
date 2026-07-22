@@ -339,7 +339,7 @@ class data_loader:
                 Ti_err = CER[sys]['Ti_err'].values
                 
                 TeTi_err = Te/(Ti+1)*np.hypot(Te_err/(Te+1),Ti_err/(Ti+1))
-                TeTi_err[Ti_err < 0] = -np.infty
+                TeTi_err[Ti_err < 0] = -np.inf
                 Te_Ti[sys] = CER[sys].drop(['Ti','Ti_err','omega','omega_err','nC6','nC6_err'])
                 Te_Ti[sys]['Te/Ti'] = xarray.DataArray(Te/(Ti+1),dims=['time','channel'], attrs={'units':'-','label':'T_e/T_i'})
                 Te_Ti[sys]['Te/Ti_err'] = xarray.DataArray(TeTi_err,dims=['time','channel'])
@@ -410,7 +410,7 @@ class data_loader:
                         zeff = Zimp*(Zimp - Zmain)*fC + Zmain
                         zeff_err = np.ones_like(zeff)
                         zeff_err[valid]  = (zeff[valid]-Zmain)*np.hypot(ne_err/(ne+1),nC_err/(nC+1))[valid]
-                        zeff_err[~valid] = -np.infty
+                        zeff_err[~valid] = -np.inf
                         
                         Zeff['diag_names'][sys] = ['CHERS']            
                         Zeff[sys] = CER[sys].drop(['Ti','Ti_err','omega','omega_err','nC6','nC6_err'])
@@ -924,8 +924,8 @@ class data_loader:
  
         #these points will be ignored and not plotted (negative errobars )
         invalid = (Te_err<=0) | (Te <=0 ) | (ne_err<=0) | (ne <=0 )
-        Te_err[invalid]  = -np.infty
-        ne_err[invalid]  = -np.infty
+        Te_err[invalid]  = -np.inf
+        ne_err[invalid]  = -np.inf
         
         channel = np.arange(len(R))
 

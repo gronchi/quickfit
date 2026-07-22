@@ -7,7 +7,10 @@ import numpy as np
 from scipy.ndimage.interpolation import map_coordinates
 from scipy.interpolate import UnivariateSpline, interp1d, InterpolatedUnivariateSpline, LinearNDInterpolator
 import sys,os
-from scipy.integrate import cumulative_trapezoid as cumtrapz
+try:
+    from scipy.integrate import cumulative_trapezoid as cumtrapz
+except ImportError:
+    from scipy.integrate import cumtrapz  #cumulative_trapezoid added in scipy 1.6
 
 
 

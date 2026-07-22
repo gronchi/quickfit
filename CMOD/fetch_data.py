@@ -2,6 +2,10 @@ from __future__ import print_function
 
 import MDSplus
 import numpy as np
+try:
+    from numpy import trapezoid as trapz
+except ImportError:
+    from numpy import trapz  #np.trapz removed in numpy 2.0
 from time import time
 from scipy.interpolate import interp1d,NearestNDInterpolator,LinearNDInterpolator
 
@@ -190,7 +194,7 @@ class data_loader:
                 ts2 = deepcopy(self.load_ts(tbeg, tend, ['edge']))
                 if 'edge' in ts2:
                     #use only timerangee where HIREX dta are availible
-                    t1,t2 = np.infty, -np.infty
+                    t1,t2 = np.inf, -np.inf
                     for sys in data[-1]['systems']:
                         if sys in data[-1]:
                             t1_,t2_ = data[-1][sys]['time'].values[[0,-1]]
@@ -352,8 +356,8 @@ class data_loader:
                 ne_err[isys][:,1::2] = ne_err_mean
 
 
-            Te_err[isys][~valid_TS]  = -np.infty
-            ne_err[isys][~valid_TS]  = -np.infty
+            Te_err[isys][~valid_TS]  = -np.inf
+            ne_err[isys][~valid_TS]  = -np.inf
             
             
             
@@ -363,8 +367,8 @@ class data_loader:
             if sys ==  'core':
                 too_low_Te = np.zeros_like(valid_TS)
                 too_low_Te[valid_TS] = Te[isys][valid_TS]*norm[sys]['T_e'] < 100 
-                Te_err[isys][too_low_Te] = np.infty
-                ne_err[isys][too_low_Te] = np.infty
+                Te_err[isys][too_low_Te] = np.inf
+                ne_err[isys][too_low_Te] = np.inf
                 
                  
                 
@@ -461,14 +465,14 @@ class data_loader:
             valid = np.isfinite(pro)&np.isfinite(perr)
             valid &= (rho <  .9)[None]#measurement too far outside are unreliable
             pro[~np.isfinite(pro)] = 0
-            perr[~valid] = -np.infty
+            perr[~valid] = -np.inf
             
             #negative ion temperature
-            perr[3][pro[3] < 0] = -np.infty
+            perr[3][pro[3] < 0] = -np.inf
             #too high temperature
-            perr[3][pro[3] > 10] = np.infty
+            perr[3][pro[3] > 10] = np.inf
             #too fast rotation 
-            perr[1][np.abs(pro[1]) > 50] = np.infty
+            perr[1][np.abs(pro[1]) > 50] = np.inf
 
             # exclude obvious outliers            
             #outliers = (pro[3] < .5)|(perr[3] > .5)
@@ -876,7 +880,7 @@ class data_loader:
         #interpolate density along LOS for each time 
         LOS_ne = [np.interp(lr,r,n,right=0) for lr, r, n in zip(LOS_rho, R,N)]
         #do line integration
-        LOS_ne_int = np.trapz(LOS_ne,LOS_L,axis=-1)
+        LOS_ne_int = trapz(LOS_ne,LOS_L,axis=-1)
         #core_lasers = np.unique(laser_index)
         
         tci_los_names  = TCI['channel'].values
